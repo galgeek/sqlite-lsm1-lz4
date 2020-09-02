@@ -92,6 +92,7 @@ SQLITE_EXTENSION_INIT1
 #include "lsm.h"
 #include <assert.h>
 #include <string.h>
+#include "lsm-lz4.h"
 
 /* Forward declaration of subclasses of virtual table objects */
 typedef struct lsm1_vtab lsm1_vtab;
@@ -263,6 +264,12 @@ static int lsm1Connect(
   rc = lsm_new(0, &pNew->pDb);
   if( rc ){
     *pzErr = sqlite3_mprintf("lsm_new failed with error code %d",  rc);
+    rc = SQLITE_ERROR;
+    goto connect_failed;
+  }
+  rc = lsm_lz4_config(pNew->pDb);
+  if( rc ){
+    *pzErr = sqlite3_mprintf("lsm_lz4_config failed with error code %d",  rc);
     rc = SQLITE_ERROR;
     goto connect_failed;
   }
