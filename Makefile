@@ -13,6 +13,7 @@ LSMOBJ    = \
   lsm_ckpt.o \
   lsm_file.o \
   lsm_log.o \
+  lsm-lz4.o \
   lsm_main.o \
   lsm_mem.o \
   lsm_mutex.o \
@@ -23,11 +24,16 @@ LSMOBJ    = \
   lsm_unix.o \
   lsm_win32.o \
   lsm_varint.o \
-  lsm_vtab.o
+  lsm_vtab.o \
+  lz4.o
 
 LSMHDR   = \
   $(LSMDIR)/lsm.h \
-  $(LSMDIR)/lsmInt.h
+  $(LSMDIR)/lsmInt.h \
+  $(LSMDIR)/lsm-lz4.h \
+  $(LSMDIR)/lz4.h \
+  $(LSMDIR)/lz4_decoder.h \
+  $(LSMDIR)/lz4_encoder.h
 
 LSMTESTSRC = $(LSMDIR)/lsm-test/lsmtest1.c $(LSMDIR)/lsm-test/lsmtest2.c     \
              $(LSMDIR)/lsm-test/lsmtest3.c $(LSMDIR)/lsm-test/lsmtest4.c     \
@@ -44,13 +50,14 @@ LSMTESTSRC = $(LSMDIR)/lsm-test/lsmtest1.c $(LSMDIR)/lsm-test/lsmtest2.c     \
 # all: lsm.so
 
 LSMOPTS += -fPIC -DLSM_MUTEX_PTHREADS=1 -I$(LSMDIR) -DHAVE_ZLIB
+LZ4_OPTS = -DUSE_LSM_LZ4_COMPRESSOR -Ilz4 lz4.c lsm-lz4.c
 
 lsm.so:	$(LSMOBJ)
 	$(TCCX) -shared -fPIC -o lsm.so $(LSMOBJ)
 
 %.o:	$(LSMDIR)/%.c $(LSMHDR) sqlite3.h
-	$(TCCX) $(LSMOPTS) -c $<
+	$(TCCX) $(LSMOPTS) $(LZ4_OPTS) -c $<
 	
 lsmtest$(EXE): $(LSMOBJ) $(LSMTESTSRC) $(LSMTESTHDR) sqlite3.o
 	# $(TCPPX) -c $(TOP)/lsm-test/lsmtest_tdb2.cc
-	$(TCCX) $(LSMOPTS) $(LSMTESTSRC) $(LSMOBJ) sqlite3.o -o lsmtest$(EXE) $(THREADLIB) -lz
+	$(TCCX) $(LSMOPTS) $(LZ4_OPTS) $(LSMTESTSRC) $(LSMOBJ) sqlite3.o -o lsmtest$(EXE) $(THREADLIB) -lz
