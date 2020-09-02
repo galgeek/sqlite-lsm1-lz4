@@ -4,6 +4,7 @@ WIP adding lz4 compression to sqlite3-lsm1 based on https://github.com/thoughtpo
 build like so:
 
 export CFLAGS="-fPIC -O2"
+
 TCCX="gcc -g -fPIC -O2" make lsm.so
 
 
